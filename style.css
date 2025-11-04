@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5; /* Warna mirip ChatGPT */
+}
+
+.chat-container {
+    max-width: 800px;
+    margin: 50px auto;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+header {
+    background-color: #10a37f; /* Warna hijau mirip ChatGPT */
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.chat-window {
+    padding: 20px;
+}
+
+.messages {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.messages p {
+    margin: 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.messages .user-message {
+    background-color: #dcf8c6;
+    text-align: right;
+}
+
+.messages .ai-message {
+    background-color: #e5e5e5;
+    text-align: left;
+}
+
+.input-area {
+    display: flex;
+}
+
+#user-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+}
+
+#send-button {
+    padding: 10px 20px;
+    background-color: #10a37f;
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+#send-button:hover {
+    background-color: #079c6c;
+}
