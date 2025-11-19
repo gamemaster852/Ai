@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Professional</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Monaco', monospace] },
+                    colors: { gray: { 750: '#2d2d3b', 800: '#1f1f2e', 900: '#111118' } },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Scrollbar Halus */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 20px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.2); }
+        
+        /* Code Block Style */
+        .code-block { background-color: #0d0d0d; border-radius: 0.5rem; margin: 1rem 0; overflow: hidden; border: 1px solid #333; }
+        .code-header { display: flex; justify-content: space-between; background-color: #2f2f2f; padding: 0.5rem 1rem; font-size: 0.75rem; color: #b4b4b4; }
+        .code-content { padding: 1rem; overflow-x: auto; color: #e3e3e3; font-family: 'Monaco', monospace; font-size: 0.875rem; white-space: pre-wrap; }
+        
+        /* Typing Dot Animation */
+        .typing-dot { width: 6px; height: 6px; background-color: #888; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    </style>
+</head>
+
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <aside class="w-[260px] bg-black text-gray-100 flex-col hidden md:flex h-full border-r border-gray-800 flex-shrink-0">
+        <div class="p-3">
+            <button onclick="window.location.reload()" class="flex items-center gap-2 w-full px-3 py-3 rounded-lg hover:bg-gray-800 text-sm font-medium border border-gray-700/50 text-left">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New chat
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto custom-scrollbar px-3 py-2">
+            <div class="text-xs font-medium text-gray-500 mb-2 px-2">Riwayat</div>
+            <div class="text-sm text-gray-300 truncate px-2 py-2 hover:bg-gray-800 rounded-lg cursor-pointer">Percakapan Baru</div>
+        </div>
+        <div class="p-3 border-t border-gray-800">
+            <button id="theme-toggle-sidebar" class="flex items-center gap-3 px-2 py-3 w-full rounded-lg hover:bg-gray-800 text-left">
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white">
+                    <svg class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <svg class="h-5 w-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                </div>
+                <div class="flex flex-col"><span class="text-sm font-medium">Ubah Tema</span><span class="text-xs text-gray-500" id="theme-status">Otomatis</span></div>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full relative bg-white dark:bg-gray-900 transition-colors duration-300">
+        
+        <div class="md:hidden sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+            <span class="font-semibold">AI Chat</span>
+            <button id="theme-toggle-mobile" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                 <svg class="h-6 w-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                 <svg class="h-6 w-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            </button>
+        </div>
+
+        <div class="hidden md:flex sticky top-0 z-10 p-4 items-center justify-between pl-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+            <button class="flex items-center gap-2 text-lg font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-1.5 rounded-lg">
+                Myana Chat 4o <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <button id="theme-toggle-desktop" class="mr-4 p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                 <svg class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                 <svg class="h-5 w-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            </button>
+        </div>
+
+        <div id="chat" class="flex-1 overflow-y-auto custom-scrollbar p-4 pb-40 scroll-smooth">
+            <div class="flex flex-col items-center justify-center h-full text-center space-y-4" id="welcome-screen">
+                <div class="w-12 h-12 bg-black dark:bg-white rounded-full flex items-center justify-center mb-2">
+                    <svg class="h-6 w-6 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Ada yang bisa saya bantu?</h2>
+            </div>
+        </div>
+
+        <div class="w-full max-w-3xl mx-auto px-4 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white dark:from-gray-900 dark:via-gray-900 to-transparent pt-10 pb-6">
+            
+            <div id="file-preview" class="hidden mb-2 ml-2">
+                 <div class="inline-flex items-center gap-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2 pr-4 shadow-sm relative">
+                    <div id="preview-content" class="flex items-center gap-2 text-gray-800 dark:text-gray-200"></div>
+                    <button type="button" id="remove-file" class="absolute -top-2 -right-2 bg-white dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 shadow-md p-1 text-gray-500 dark:text-gray-300 hover:text-red-500">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <form id="form" class="relative flex items-end gap-2 w-full p-3 bg-gray-100 dark:bg-[#2f2f2f] rounded-[26px] transition-all focus-within:ring-1 focus-within:ring-gray-300 dark:focus-within:ring-gray-600 shadow-sm">
+                
+                <input type="file" name="file" accept="image/*,video/mp4,audio/*,application/pdf" class="hidden" id="file-upload">
+                <label for="file-upload" class="flex-shrink-0 cursor-pointer p-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full mb-0.5">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                    </svg>
+                </label>
+
+                <textarea 
+                    name="text" 
+                    placeholder="Ketik pesan..." 
+                    rows="1" 
+                    class="w-full max-h-[200px] py-2.5 bg-transparent border-none outline-none focus:ring-0 resize-none text-gray-800 dark:text-gray-100 placeholder-gray-500 leading-relaxed custom-scrollbar text-base" 
+                    style="min-height: 44px;"
+                ></textarea>
+                
+                <button type="submit" id="send-btn" disabled class="flex-shrink-0 p-2 mb-0.5 rounded-full bg-black dark:bg-white text-white dark:text-black disabled:bg-transparent disabled:text-gray-300 dark:disabled:bg-transparent dark:disabled:text-gray-500 transition-all duration-200">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="text-center mt-2"><p class="text-xs text-gray-400 dark:text-gray-500">AI mungkin membuat kesalahan. Periksa info penting.</p></div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. TEMA (Dark/Light) ---
+            const htmlElement = document.documentElement;
+            const themeStatus = document.getElementById('theme-status');
+            const toggleBtns = document.querySelectorAll('[id^="theme-toggle"]');
+
+            function applyTheme(isDark) {
+                if (isDark) { htmlElement.classList.add('dark'); localStorage.theme = 'dark'; if(themeStatus) themeStatus.innerText = 'Gelap'; } 
+                else { htmlElement.classList.remove('dark'); localStorage.theme = 'light'; if(themeStatus) themeStatus.innerText = 'Terang'; }
+            }
+            
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { applyTheme(true); } 
+            else { applyTheme(false); }
+
+            toggleBtns.forEach(btn => btn.addEventListener('click', () => applyTheme(!htmlElement.classList.contains('dark'))));
+
+            // --- 2. LOGIKA CHAT ---
+            const chat = document.getElementById("chat");
+            const form = document.getElementById("form");
+            const textarea = form.querySelector("textarea");
+            const fileInput = document.getElementById("file-upload");
+            const filePreview = document.getElementById("file-preview");
+            const previewContent = document.getElementById("preview-content");
+            const removeFileBtn = document.getElementById("remove-file");
+            const welcomeScreen = document.getElementById("welcome-screen");
+            const sendBtn = document.getElementById("send-btn");
+            
+            let selectedFile = null;
+            let isTyping = false;
+
+            function autoResize() { textarea.style.height = 'auto'; textarea.style.height = textarea.scrollHeight + 'px'; checkInput(); }
+            textarea.addEventListener('input', autoResize);
+            function checkInput() { sendBtn.disabled = !(textarea.value.trim().length > 0 || selectedFile); }
+            checkInput();
+
+            // --- FUNGSI MEDIA (Sama seperti kode asli) ---
+            function createMediaElement(file, fileUrl) {
+                const fileType = file.type;
+                if (fileType.startsWith('image/')) {
+                    return `<img src="${fileUrl}" alt="Gambar" class="max-w-xs rounded-xl cursor-pointer shadow-lg border border-gray-200 dark:border-gray-700 my-2" onclick="window.open('${fileUrl}', '_blank')">`;
+                } else if (fileType === 'video/mp4') {
+                    return `<video src="${fileUrl}" controls class="max-w-xs rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 my-2"></video>`;
+                } else if (fileType.startsWith('audio/')) {
+                    return `<div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 my-2 max-w-xs"><div class="flex items-center space-x-2 mb-2"><span class="text-purple-600">🎵</span><div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">${file.name}</div></div><audio src="${fileUrl}" controls class="w-full"></audio></div>`;
+                } else if (fileType === 'application/pdf') {
+                    return `<div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 my-2 max-w-md"><div class="flex items-center justify-between mb-3"><div class="flex items-center space-x-2"><span class="text-red-600">📄</span><div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">${file.name}</div></div><button onclick="window.open('${fileUrl}', '_blank')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-medium">Buka</button></div><iframe src="${fileUrl}" class="w-full h-40 rounded-lg border border-gray-200 bg-white"></iframe></div>`;
+                }
+                return `<div class="p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm my-2 dark:text-gray-200">📎 ${file.name}</div>`;
+            }
+
+            function showFilePreview(file) {
+                selectedFile = file;
+                previewContent.innerHTML = '';
+                let content = file.type.startsWith('image/') ? `<img src="${URL.createObjectURL(file)}" class="h-10 w-10 object-cover rounded-lg">` : `<div class="h-10 w-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">📎</div>`;
+                previewContent.innerHTML = content + `<span class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate max-w-[150px] ml-2">${file.name}</span>`;
+                filePreview.classList.remove('hidden');
+                checkInput();
+            }
+            
+            function removeFilePreview() { selectedFile = null; fileInput.value = ''; filePreview.classList.add('hidden'); checkInput(); }
+            fileInput.addEventListener('change', (e) => { if (e.target.files[0]) showFilePreview(e.target.files[0]); });
+            removeFileBtn.addEventListener('click', removeFilePreview);
+
+            // --- LOGIC KIRIM ---
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                if(welcomeScreen) welcomeScreen.style.display = 'none';
+                
+                const formData = new FormData(form);
+                const userText = formData.get("text");
+                let fileUrl = '';
+                let userContentHtml = '';
+
+                if (selectedFile) {
+                    fileUrl = URL.createObjectURL(selectedFile);
+                    userContentHtml += createMediaElement(selectedFile, fileUrl);
+                    formData.set("file", selectedFile);
+                }
+                if (userText) userContentHtml += `<div class="whitespace-pre-wrap">${userText.replace(/</g, "&lt;")}</div>`;
+
+                const userDiv = document.createElement('div');
+                userDiv.className = 'w-full max-w-3xl mx-auto px-4 py-4 flex justify-end animate-fade-in';
+                userDiv.innerHTML = `<div class="bg-gray-100 dark:bg-[#2f2f2f] text-gray-800 dark:text-gray-100 rounded-3xl rounded-tr-md px-5 py-3 max-w-[85%] shadow-sm">${userContentHtml}</div>`;
+                chat.appendChild(userDiv);
+
+                textarea.value = ''; textarea.style.height = 'auto'; removeFilePreview(); sendBtn.disabled = true; textarea.disabled = true;
+                
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typing-indicator';
+                typingDiv.className = 'w-full max-w-3xl mx-auto px-4 py-6 flex gap-4 animate-fade-in';
+                typingDiv.innerHTML = `<div class="w-8 h-8 rounded-full bg-black dark:bg-white flex-shrink-0 flex items-center justify-center"><svg class="h-5 w-5 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="flex items-center space-x-1 pt-2"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+                chat.appendChild(typingDiv);
+                chat.scrollTop = chat.scrollHeight;
+
+                try {
+                    const res = await fetch("/chat", { method: "POST", body: formData });
+                    const data = await res.json();
+                    
+                    if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
+
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = 'w-full max-w-3xl mx-auto px-4 py-6 flex gap-4 animate-fade-in border-b border-gray-100 dark:border-gray-800/50';
+                    
+                    let aiContent = data.result 
+                        ? data.result.replace(/</g, "&lt;").replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/`(.*?)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">$1</code>').replace(/```(\w+)?\s*([\s\S]*?)```/g, '<div class="code-block"><div class="code-header">Code</div><div class="code-content">$2</div></div>').replace(/\n/g, "<br>")
+                        : `<span class="text-red-500">Error: ${data.error}</span>`;
+                    
+                    aiDiv.innerHTML = `<div class="w-8 h-8 rounded-full bg-black dark:bg-white flex-shrink-0 flex items-center justify-center mt-1"><svg class="h-5 w-5 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><div class="flex-1 text-gray-800 dark:text-gray-100 leading-7">${aiContent}</div>`;
+                    chat.appendChild(aiDiv);
+
+                } catch (err) {
+                    if(document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
+                    const errDiv = document.createElement('div');
+                    errDiv.className = 'w-full max-w-3xl mx-auto px-4 py-4 text-red-500 text-center text-xs';
+                    errDiv.innerText = "Gagal terhubung ke server.";
+                    chat.appendChild(errDiv);
+                }
+
+                textarea.disabled = false; textarea.focus(); chat.scrollTop = chat.scrollHeight;
+                if (fileUrl) setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+            };
+
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if(!sendBtn.disabled) form.dispatchEvent(new Event('submit')); }
+            });
+        });
+    </script>
+</body>
+</html>
